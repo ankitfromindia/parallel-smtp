@@ -1,0 +1,64 @@
+{
+    "name": "ankitfromindia/parallel-smtp",
+    "type": "library",
+    "description": "High-performance parallel SMTP client for Laravel with connection pooling and pipelining - up to 10x faster bulk email sending",
+    "keywords": [
+        "laravel",
+        "smtp",
+        "parallel",
+        "bulk email",
+        "high performance",
+        "connection pooling",
+        "pipelining",
+        "concurrent",
+        "email marketing",
+        "enterprise"
+    ],
+    "homepage": "https://github.com/ankitfromindia/parallel-smtp",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ankit Vishwakarma",
+            "email": "ankit@ankitfromindia.com",
+            "homepage": "https://ankitfromindia.com",
+            "role": "Creator & Maintainer"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^10.0|^11.0|^12.0",
+        "swiftmailer/swiftmailer": "^6.3",
+        "react/socket": "^1.12",
+        "react/promise": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0|^11.0",
+        "orchestra/testbench": "^8.0|^9.0|^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "AnkitFromIndia\\ParallelSmtp\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AnkitFromIndia\\ParallelSmtp\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "AnkitFromIndia\\ParallelSmtp\\ParallelSmtpServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
