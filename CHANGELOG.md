@@ -2,7 +2,7 @@
 
 All notable changes to `parallel-smtp` will be documented in this file.
 
-## 1.1.0 - 2025-12-17
+## 1.0.1 - 2025-12-17
 
 ### Added
 - Min/max batch size validation for bulk operations
