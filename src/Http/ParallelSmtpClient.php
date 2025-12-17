@@ -106,7 +106,8 @@ class ParallelSmtpClient
             ->setUsername($this->smtpConfig['username'])
             ->setPassword($this->smtpConfig['password'])
             ->setTimeout(30)
-            ->setSourceIp('0.0.0.0');
+            ->setLocalDomain('[127.0.0.1]')
+            ->setAuthMode('login');
 
             $this->connections[$connectionId] = new Swift_Mailer($transport);
             $this->messageCounters[$connectionId] = 0;
