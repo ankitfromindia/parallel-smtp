@@ -83,8 +83,8 @@ class ParallelSmtpClient
                 $this->smtpConfig['encryption'] ?? null
             ))
             ->setUsername($this->smtpConfig['username'])
-            ->setPassword($this->smtpConfig['password'])
-            ->setPipelining(true);
+            ->setPassword($this->smtpConfig['password']);
+            // ->setPipelining(true); // Disable pipelining to avoid 502 errors
 
             $this->connections[$connectionId] = new Swift_Mailer($transport);
             $this->messageCounters[$connectionId] = 0;
