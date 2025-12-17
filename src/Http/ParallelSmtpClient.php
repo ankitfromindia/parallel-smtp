@@ -12,29 +12,44 @@ class ParallelSmtpClient
     private array $messageCounters = [];
     private int $maxConnections;
     private int $messagesPerConnection;
+    private int $minBatchSize;
+    private int $maxBatchSize;
     private array $smtpConfig;
 
-    public function __construct(array $smtpConfig, int $maxConnections = 10, int $messagesPerConnection = 100)
+    public function __construct(array $smtpConfig, int $maxConnections = 10, int $messagesPerConnection = 100, int $minBatchSize = 1, int $maxBatchSize = 1000)
     {
         $this->smtpConfig = $smtpConfig;
         $this->maxConnections = $maxConnections;
         $this->messagesPerConnection = $messagesPerConnection;
+        $this->minBatchSize = $minBatchSize;
+        $this->maxBatchSize = $maxBatchSize;
+    }
+
+    public function send(array $message): array
+    {
+        return $this->sendMessage($message, 0);
     }
 
     public function sendBulk(array $messages): array
     {
+        $messageCount = count($messages);
+        
+        if ($messageCount < $this->minBatchSize) {
+            throw new \Exception("Minimum batch size is {$this->minBatchSize}, got {$messageCount}");
+        }
+        
+        if ($messageCount > $this->maxBatchSize) {
+            throw new \Exception("Maximum batch size is {$this->maxBatchSize}, got {$messageCount}");
+        }
+
         $chunks = array_chunk($messages, $this->maxConnections);
         $results = [];
 
         foreach ($chunks as $chunk) {
-            $promises = [];
-            
             foreach ($chunk as $index => $message) {
                 $connectionId = $index % $this->maxConnections;
-                $promises[] = $this->sendMessage($message, $connectionId);
+                $results[] = $this->sendMessage($message, $connectionId);
             }
-
-            $results = array_merge($results, $promises);
         }
 
         return $results;
