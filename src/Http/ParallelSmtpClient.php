@@ -57,21 +57,42 @@ class ParallelSmtpClient
 
     private function sendMessage(array $message, int $connectionId): array
     {
-        try {
-            $mailer = $this->getConnection($connectionId);
-            $swiftMessage = $this->createSwiftMessage($message);
-            $result = $mailer->send($swiftMessage);
-            
-            $this->messageCounters[$connectionId]++;
-            
-            if ($this->messageCounters[$connectionId] >= $this->messagesPerConnection) {
+        $maxRetries = 3;
+        $retryCount = 0;
+        
+        while ($retryCount < $maxRetries) {
+            try {
+                $mailer = $this->getConnection($connectionId);
+                $swiftMessage = $this->createSwiftMessage($message);
+                $result = $mailer->send($swiftMessage);
+                
+                $this->messageCounters[$connectionId]++;
+                
+                if ($this->messageCounters[$connectionId] >= $this->messagesPerConnection) {
+                    $this->resetConnection($connectionId);
+                }
+                
+                return ['success' => true, 'result' => $result];
+                
+            } catch (\Swift_TransportException $e) {
+                $retryCount++;
+                
+                // Reset connection on transport errors
                 $this->resetConnection($connectionId);
+                
+                if ($retryCount >= $maxRetries) {
+                    return ['success' => false, 'error' => 'SMTP Error after ' . $maxRetries . ' retries: ' . $e->getMessage()];
+                }
+                
+                // Wait before retry
+                usleep(500000); // 0.5 seconds
+                
+            } catch (\Exception $e) {
+                return ['success' => false, 'error' => $e->getMessage()];
             }
-            
-            return ['success' => true, 'result' => $result];
-        } catch (\Exception $e) {
-            return ['success' => false, 'error' => $e->getMessage()];
         }
+        
+        return ['success' => false, 'error' => 'Max retries exceeded'];
     }
 
     private function getConnection(int $connectionId): Swift_Mailer
@@ -83,8 +104,9 @@ class ParallelSmtpClient
                 $this->smtpConfig['encryption'] ?? null
             ))
             ->setUsername($this->smtpConfig['username'])
-            ->setPassword($this->smtpConfig['password']);
-            // ->setPipelining(true); // Disable pipelining to avoid 502 errors
+            ->setPassword($this->smtpConfig['password'])
+            ->setTimeout(30)
+            ->setSourceIp('0.0.0.0');
 
             $this->connections[$connectionId] = new Swift_Mailer($transport);
             $this->messageCounters[$connectionId] = 0;
